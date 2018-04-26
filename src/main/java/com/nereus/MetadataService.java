@@ -9,44 +9,60 @@ import static com.nereus.HLLDB.*;
 
 public class MetadataService {
 
+    /**
+     * determine whether there is superset propersubset realtion
+     *
+     * @param leftName String
+     * @param rightName String
+     */
+    public static Boolean isInProperSubsetSuperset (String leftName, String rightName)
+    {
+        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> leftProperSubset= (Collection) PROPERSUBSET.get(leftName);
+        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightSuperSet= (Collection) SUPERSET.get(rightName);
 
+       return rightSuperSet.stream().flatMap(x->leftProperSubset.stream().filter(s->x.getValue3().equals(s.getValue0()))).findAny().isPresent();
 
-    public static Sextet getMatchMaxCardinalityTuple2 (String leftname, String rightName){
+    }
+
+    public static Sextet getMatchMaxCardinalityTuple2 (String leftName, String rightName){
         /**Use this for inherited relationships when name do not longer match */
 
         //System.err.println("DEBUG MAXXXXXXXXX "+leftname+" "+rightName);
         Sextet properSub= null;
 
-        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> sextetList= (Collection) PROPERSUBSET.get(leftname);
-        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightList= (Collection) PROPERSUBSET.get(rightName);
-        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightList2= (Collection) SUPERSET.get(rightName);
+        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> leftProperSubset= (Collection) PROPERSUBSET.get(leftName);
+        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightProperSubset= (Collection) PROPERSUBSET.get(rightName);
+        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightSuperSet= (Collection) SUPERSET.get(rightName);
         boolean isInProperSubsetSuperset= false;
         final Comparator<Sextet<String, Set<String>, Long, String, Set<String>, Long>> comp = (s1, s2) -> Long.compare(s1.getValue2(), s2.getValue2());
 
-        if(rightList2!=null && sextetList!=null) {
+        if(rightSuperSet!=null && leftProperSubset!=null) {
+            //this didn't work
+           // isInProperSubsetSuperset = rightSuperSet.stream().anyMatch(s -> s.getValue0().equals(leftProperSubset.iterator().next().getValue3())&& !s.getValue1().isEmpty());
+            isInProperSubsetSuperset = isInProperSubsetSuperset(leftName,rightName);
 
-            isInProperSubsetSuperset = rightList2.stream().anyMatch(s -> s.getValue0().equals(sextetList.iterator().next().getValue3())&& !s.getValue1().isEmpty());
             if(isInProperSubsetSuperset){
-                // properSub = sextetList.stream().filter(s-> s.getValue3().equals(rightList.iterator().next().getValue0())).max(comp).get();
+                 properSub = leftProperSubset.stream().filter(s-> s.getValue3().equals(rightSuperSet.iterator().next().getValue0())).max(comp).get();
+              //  properSub = leftProperSubset.stream().flatMap(x->leftProperSubset.stream().filter(s->x.getValue3().equals(s.getValue0()))).max(comp).get();
                 //System.out.println(leftname+rightName+" Hello");
 
             }
         }
-        /*if(!rightList.stream().anyMatch(s-> s.getValue3().equals(sextetList.iterator().next().getValue0())))
+        /*if(!rightProperSubset.stream().anyMatch(s-> s.getValue3().equals(leftProperSubset.iterator().next().getValue0())))
         {
-            rightList=(Collection) superset.get(rightName);
+            rightProperSubset=(Collection) superset.get(rightName);
         }*/
         //TODO add !isInProperSubset check the if it is in superset  ?
 
-        if(sextetList!=null && rightList!=null  ) {
+      else  if(leftProperSubset!=null && rightProperSubset!=null  ) {
 
             try {
-                // properSub = sextetList.stream().filter(s -> s.getValue3().equals(rightName)).max(comp).get();
-                //properSub = rightList.stream().filter(s-> s.getValue3().equals(sextetList.iterator().next().getValue0())).max(comp).get();
-                properSub = sextetList.stream().filter(s-> s.getValue3().equals(rightList.iterator().next().getValue0())).max(comp).get();
+                // properSub = leftProperSubset.stream().filter(s -> s.getValue3().equals(rightName)).max(comp).get();
+                //properSub = rightProperSubset.stream().filter(s-> s.getValue3().equals(leftProperSubset.iterator().next().getValue0())).max(comp).get();
+                properSub = leftProperSubset.stream().filter(s-> s.getValue3().equals(rightProperSubset.iterator().next().getValue0())).max(comp).get();
 
             } catch (NoSuchElementException e) {
-                properSub = sextetList.stream().max(comp).get();
+                properSub = leftProperSubset.stream().max(comp).get();
                 //TODO handle NoSucheElementException for Claim Payment1&Claim
                 // System.err.println("StackTrace"+leftname+" "+rightName);
                 //System.err.println("ProperSub"+properSub.toString());
@@ -56,7 +72,7 @@ public class MetadataService {
             }
         }
         //System.out.println("GET MAXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-        //System.out.println(sextetList.stream().max(comp).get().toString());
+        //System.out.println(leftProperSubset.stream().max(comp).get().toString());
         return properSub;
     }
 
@@ -65,13 +81,13 @@ public class MetadataService {
         System.err.println("DEBUG MAXXXXXXXXX "+leftname+" "+rightName);
 
 
-        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> sextetList= (Collection) properSubset.get(leftname);
+        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> leftProperSubset= (Collection) properSubset.get(leftname);
         final Comparator<Sextet<String,Set<String>,Long,String,Set<String>,Long>> comp = (s1,s2) -> Long.compare(s1.getValue2(),s2.getValue2());
-        Sextet properSub =sextetList.stream().filter(s->s.getValue3().equals(rightName)).max(comp).get();
+        Sextet properSub =leftProperSubset.stream().filter(s->s.getValue3().equals(rightName)).max(comp).get();
 
 
         System.out.println("GET MAXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-        System.out.println(sextetList.stream().filter(s->s.getValue3().equals(rightName)).max(comp).get().toString());
+        System.out.println(leftProperSubset.stream().filter(s->s.getValue3().equals(rightName)).max(comp).get().toString());
 
         return properSub;
 
@@ -111,6 +127,8 @@ public class MetadataService {
                     // System.out.println(temp.toString());
                     String newName = lname+"1";
                     JOINTRIPLET.put(newName,transformed);
+                    System.out.println("###########################");
+                    System.out.println("Create new leftname "+newName);
 
                     /*************METADATA STUFF***************/
                     /***Add transform start and end      */
@@ -144,9 +162,10 @@ public class MetadataService {
                         Triplet<String, String, Boolean> transformedR = Triplet.with(rname, lname, true);
                         JOINTRIPLET.put(rname,transformedR);
                         String newNameR = rname+"1";
-
-                        HLLDB.IDENTIFIEDBY.put(newNameR,temp2.getValue1());
-                        HLLDB.TEMPREGROUPED.add(newNameR);
+                        System.out.println("###########################");
+                        System.out.println("Create new rname "+newNameR);
+                        IDENTIFIEDBY.put(newNameR,temp2.getValue1());
+                        TEMPREGROUPED.add(newNameR);
                         //TODO new stuff
                         Set<String> tmpSet2 = new HashSet<>();
                         tmpSet2.add(temp2.getValue1().toString());
@@ -198,6 +217,7 @@ public class MetadataService {
 
         if(temp!= null)
         {
+            /**if less than the other than properSubset **/
             if(temp.getValue3().equals(rightName)&&(temp.getValue2().intValue() <= temp.getValue5().intValue())&& !temp.getValue1().isEmpty()) {
 
                 //   System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%GROUP BY ON THIS COLUMN");
