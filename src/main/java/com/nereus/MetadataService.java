@@ -19,8 +19,26 @@ public class MetadataService {
     {
         Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> leftProperSubset= (Collection) PROPERSUBSET.get(leftName);
         Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightSuperSet= (Collection) SUPERSET.get(rightName);
+        HashMap<Integer,Boolean> isInProperSubsetSuperset = new HashMap<>();
+        isInProperSubsetSuperset.put(1,false);
 
-       return rightSuperSet.stream().flatMap(x->leftProperSubset.stream().filter(s->x.getValue3().equals(s.getValue0()))).findAny().isPresent();
+
+        leftProperSubset.forEach((e)->{
+
+            rightSuperSet.forEach((g)->{
+                if(e.getValue3().equals(g.getValue0()))
+                {
+                    isInProperSubsetSuperset.put(1,true);
+                }
+            });
+        });
+           // ADDRESS was wrongly classified as superset of POLICY condition was true but could then not find maxCardTuple
+           // returning null pointer exception      01/05/2018
+           return leftProperSubset.stream().flatMap(x-> rightSuperSet.stream().filter(s->x.getValue3().equals(s.getValue0()))).findAny().isPresent();
+             // rightSuperset contain policy-> address tuple but it was to subset. so need to qurey propersubset if it contains reference to superset
+            // return rightSuperSet.stream().flatMap(x->leftProperSubset.stream().filter(s->x.getValue3().equals(s.getValue0()))).findAny().isPresent();
+
+       // return isInProperSubsetSuperset.get(1);
 
     }
 
@@ -40,11 +58,14 @@ public class MetadataService {
             //this didn't work
            // isInProperSubsetSuperset = rightSuperSet.stream().anyMatch(s -> s.getValue0().equals(leftProperSubset.iterator().next().getValue3())&& !s.getValue1().isEmpty());
             isInProperSubsetSuperset = isInProperSubsetSuperset(leftName,rightName);
-
+         //   System.out.println(leftName+rightName+" HelloPrev");
             if(isInProperSubsetSuperset){
+               // System.out.println(leftName+rightName+" Hello");
                  properSub = leftProperSubset.stream().filter(s-> s.getValue3().equals(rightSuperSet.iterator().next().getValue0())).max(comp).get();
+
               //  properSub = leftProperSubset.stream().flatMap(x->leftProperSubset.stream().filter(s->x.getValue3().equals(s.getValue0()))).max(comp).get();
-                //System.out.println(leftname+rightName+" Hello");
+                //
+
 
             }
         }
@@ -277,6 +298,19 @@ public class MetadataService {
         }
         return ancestors;
     }
+    public static boolean hasBkFkRelations(String leftName, Set<String> column, String rightName )
+    {
+        //Check if there is BK -FK relationshp to others than current data set
+        // if yes wait
+        boolean hasBkFkRelations = false;
+        if (isBusinessKey2(leftName,column))
+        {
+            Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> col =  (Collection) PROPERSUBSET.get(leftName);
+           hasBkFkRelations = col.stream().anyMatch((e)->e.getValue4().equals(column) && !e.getValue3().equals(rightName));
+                   //.filter((e)->{e.getValue5().equals(column)}).findAny().isPresent();
+        }
+        return hasBkFkRelations;
+    }
 
     public static boolean isPartOfRegroup (String name)
     {
@@ -361,7 +395,88 @@ public class MetadataService {
         // System.out.println(diff);
         float tolerance = tolerancePercentage/100*desiredValue;
         // System.out.println(tolerance);
+
         return diff<tolerance;
     }
+
+    /**
+     * Initailzes SETCARDINALITY  map with source nodes
+     * this map will hold information about carditanlity o
+     * for each column in the data set.
+     *
+     */
+    public static void initCardinalityMap()
+    {
+        SOURCE_NODES.forEach((e)->{
+            HashMap<Set<String>,Integer> tmpMap = new HashMap<>();
+            SETCARDINALITY.put(e,tmpMap);
+        });
+    }
+
+    public static void hardCodeBusinessKeys()
+    {
+        String claimnumber = "claimnumber";
+        Set<String> claimBk = new HashSet<>();
+        claimBk.add(claimnumber);
+        TEMPBKEYS.put("Claim",claimBk);
+        String customer = "customer";
+        Set<String> customerBk = new HashSet<>();
+        customerBk.add(customer);
+        TEMPBKEYS.put("Customer",customerBk);
+        String payment = "claimnumber";
+        Set<String> paymentBk = new HashSet<>();
+        paymentBk.add(payment);
+        TEMPBKEYS.put("Payment",paymentBk);
+        String policy = "policy";
+        Set<String> policyBk = new HashSet<>();
+        policyBk.add(policy);
+        TEMPBKEYS.put("Policy",policyBk);
+        String address = "address";
+        Set<String> addressBk = new HashSet<>();
+        addressBk.add(address);
+        TEMPBKEYS.put("Address",addressBk);
+
+
+
+    }
+    public  static boolean isBusinessKey2(String dataSetName, Set<String> columnName)
+    {
+        Set<String> dataSetBk = TEMPBKEYS.get(dataSetName);
+
+        return dataSetBk.equals(columnName);
+    }
+
+    /**
+     *  * Determine if column is a candidate key / business key
+     *      * Since we deal with transactions log PK will be probacly BK+timestamp
+     *      * So we assume BK will have second highest cardinality
+     * @param dataSetName
+     * @param column
+     * @return
+     */
+
+    public static boolean isBusinessKey(String dataSetName, Set<String> column )
+    {
+        //SetCArdinality for claim contains only one column?
+       // HashMap<String,HashMap<Set<String>,Integer>> setCard = (HashMap<String,HashMap<Set<String>,Integer>>) SETCARDINALITY.clone();
+        HashMap<Set<String>,Integer> columnMap = SETCARDINALITY.get(dataSetName);
+        //Let's find primaryKey first
+       Set<String> primaryKey= Collections.max(columnMap.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+       //the second best should be BK so let's remove PK and get max again
+       // columnMap.remove(primaryKey);
+        HashMap<Set<String>,Integer> tempMap = new HashMap<>();
+
+        columnMap.forEach((k,v)->{
+            if(!k.equals(primaryKey))
+            {
+                tempMap.put(k,v);
+            }
+        });
+        Set<String> businessKey = Collections.max(tempMap.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+        //System.out.println(dataSetName+" BK "+ businessKey);
+
+        return false;
+    }
+
 
 }
