@@ -20,6 +20,8 @@ public class ProcessorService {
             while (iter.hasNext()) {
                 if (iter.next().getValue3().equals(rightName)) {
                     contains = true;
+                   // break; //TODO Customer having policy&&adress in superset will get false with argurement leftname=Customer rightName=Policy. false on second itereation althoug true
+                    //TODO this entire superset - superse/subset/propersubset(first condition in join)  needs rethinking and is not used at the moment
                 } else {
                     contains = false;
                 }
@@ -76,16 +78,17 @@ public class ProcessorService {
         //supersets only if not contains current left and right
 
         Collection<Sextet<String, Set<String>, Long, String, Set<String>, Long>> superX = (Collection) SUPERSET.get(superName);
+         if(superX!=null) {
+             superX.forEach((e) -> {
 
-        superX.forEach((e)->{
+                 if (!e.getValue3().equals(subName) && !SEPTET.containsValue(e)) {
+                     //System.err.println("subName"+subName+" superName "+superName+" newName "+newName);
+                     //System.err.println(e);
+                     SUPERSET.put(newName, e);
 
-            if(!e.getValue3().equals(subName) && !SEPTET.containsValue(e)){
-                //System.err.println("subName"+subName+" superName "+superName+" newName "+newName);
-                //System.err.println(e);
-                SUPERSET.put(newName, e);
-
-            }
-        });
+                 }
+             });
+         }
 
         Collection<Sextet<String, Set<String>, Long, String, Set<String>, Long>> properSubX = (Collection) PROPERSUBSET.get(superName);
 
