@@ -102,101 +102,131 @@ public class MetadataService {
         return properSub;
     }
 
+    /**
+     * Takes collection of business key - foreign key relations tuples and
+     * returns the matching one.
+     * @param leftCollection
+     * @param rightCollection
+     * @return
+     */
+
+    private static Sextet getBkFkTuple(Collection leftCollection, Collection rightCollection)
+    {
+        Sextet bkFkTuple = null;
+        Sextet bkFkTuple2 = null;
+        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> left = leftCollection;
+        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> right = rightCollection;
+        /**
+        Iterator iterOuter = leftCollection.iterator();
+
+        while (iterOuter.hasNext()) {
+            Sextet tmp = (Sextet) iterOuter.next();
+            Iterator iterInner = rightCollection.iterator();
+            while (iterInner.hasNext()) {
+                Sextet innerTmp = (Sextet) iterInner.next();
+                if (tmp.getValue0().equals(innerTmp.getValue3())
+                        && tmp.getValue1().equals(innerTmp.getValue4())
+                        && tmp.getValue3().equals(innerTmp.getValue0())
+                        && tmp.getValue4().equals(innerTmp.getValue1())
+                        ) {
+                    bkFkTuple = tmp;
+
+                }
+            }
+
+
+        }*/
+         if(left!=null && right !=null)
+         {
+             bkFkTuple2 = left.stream().filter(l -> right.stream()
+                     .anyMatch(r -> l.getValue0().equals(r.getValue3())
+                             && l.getValue1().equals(r.getValue4())
+                             && l.getValue3().equals(r.getValue0())
+                             && l.getValue4().equals(r.getValue1())))
+                     .findFirst()
+                     .orElse(null);
+         }
+
+
+        return bkFkTuple2;
+    }
+    public static Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>>  getProperSubset( String dataSetName)
+    {
+        Collection  properSubset = (Collection) PROPERSUBSET.get(dataSetName);
+        return properSubset;
+
+    }
+
+    /**
+     * Return collection containing superset tuples
+     * @param dataSetName
+     * @return
+     */
+    public static Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>>  getSuperset( String dataSetName){
+        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> superSet= (Collection) SUPERSET.get(dataSetName);
+        return superSet;
+    }
+
     public static Sextet getMatchBkFkTuple (String leftName, String rightName){
         /**Use this for inherited relationships when name do not longer match */
 
-        //System.err.println("DEBUG MAXXXXXXXXX "+leftname+" "+rightName);
         Sextet properSub= null;
 
-        Sextet rightSuperSetTemp = null;
-        Sextet rightProperSub = null;
-        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightProperSubCol = null;
-        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> properSubCol = null;
-        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightSuperSetCol = null;
+        //Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightProperSubCol = null;
+       // Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> properSubCol = null;
+       // Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightSuperSetCol = null;
 
-        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> leftProperSubset= (Collection) PROPERSUBSET.get(leftName);
-        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightProperSubset= (Collection) PROPERSUBSET.get(rightName);
-        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightSuperSet= (Collection) SUPERSET.get(rightName);
+        //Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> leftProperSubset= (Collection) PROPERSUBSET.get(leftName);
+        //Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightProperSubset= (Collection) PROPERSUBSET.get(rightName);
+        //Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightSuperSet= (Collection) SUPERSET.get(rightName);
         boolean isInProperSubsetSuperset= false;
         final Comparator<Sextet<String, Set<String>, Long, String, Set<String>, Long>> comp = (s1, s2) -> Long.compare(s1.getValue2(), s2.getValue2());
 
-        if(rightSuperSet!=null && leftProperSubset!=null) {
-            //this didn't work
-            // isInProperSubsetSuperset = rightSuperSet.stream().anyMatch(s -> s.getValue0().equals(leftProperSubset.iterator().next().getValue3())&& !s.getValue1().isEmpty());
+        if(getSuperset(rightName)!=null && getProperSubset(leftName)!=null) {
+
             isInProperSubsetSuperset = isInProperSubsetSuperset(leftName,rightName);
-            //   System.out.println(leftName+rightName+" HelloPrev");
+
             if(isInProperSubsetSuperset){
+           // if(true){ TODO://seems that condition does nothing above
+             Collection   properSubCol = getProperSubset(leftName).stream().filter(e->{return isBkFkRelationTuple(e);}).collect(Collectors.toList());
+            Collection rightSuperSetCol= getSuperset(rightName).stream().filter(e->{return isBkFkRelationTuple(e);}).collect(Collectors.toList());
 
-                //TODO: return bk fk relationship
-                //properSub = leftProperSubset.stream().filter(s-> s.getValue3().equals(rightSuperSet.iterator().next().getValue0())).max(comp).get();
-                //properSub = leftProperSubset.stream().filter((e)->true==isBkFkRelationTuple(e)).findFirst().isPresent();
-                properSubCol = leftProperSubset.stream().filter(e->{return isBkFkRelationTuple(e);}).collect(Collectors.toList());
-             rightSuperSetCol= rightSuperSet.stream().filter(e->{return isBkFkRelationTuple(e);}).collect(Collectors.toList());
-
-                //  properSub = leftProperSubset.stream().flatMap(x->leftProperSubset.stream().filter(s->x.getValue3().equals(s.getValue0()))).max(comp).get();
-
-                if(properSubCol!=null && rightSuperSetCol!=null) {
-                    Iterator iterOuter = properSubCol.iterator();
-                    Iterator iterInner = rightSuperSetCol.iterator();
-                    while (iterOuter.hasNext()) {
-                        Sextet tmp = (Sextet) iterOuter.next();
-                        while (iterInner.hasNext()) {
-                            Sextet innerTmp = (Sextet) iterInner.next();
-                            if (tmp.getValue0().equals(innerTmp.getValue3())
-                                    && tmp.getValue1().equals(innerTmp.getValue4())) {
-                                properSub = tmp;
-                            }
-                        }
-                    }
-                }
+                //if(properSubCol!=null && rightSuperSetCol!=null) {
+                    properSub= getBkFkTuple(properSubCol,rightSuperSetCol);
+               // }
 
             }
         }
-        /*if(!rightProperSubset.stream().anyMatch(s-> s.getValue3().equals(leftProperSubset.iterator().next().getValue0())))
-        {
-            rightProperSubset=(Collection) superset.get(rightName);
-        }*/
+
         //TODO add !isInProperSubset check the if it is in superset  ?
 
-        else  if(leftProperSubset!=null && rightProperSubset!=null  ) {
+        else  if(getProperSubset(leftName)!=null && getProperSubset(rightName)!=null  ) {
 
-            try {
+         //   try {
                 // properSub = leftProperSubset.stream().filter(s -> s.getValue3().equals(rightName)).max(comp).get();
                 //properSub = rightProperSubset.stream().filter(s-> s.getValue3().equals(leftProperSubset.iterator().next().getValue0())).max(comp).get();
-                properSubCol = leftProperSubset.stream().filter(e->{return isBkFkRelationTuple(e);}).collect(Collectors.toList());
+                Collection properSubCol = getProperSubset(leftName).stream().filter(e->{return isBkFkRelationTuple(e);}).collect(Collectors.toList());
 
                // rightProperSubset.stream().allMatch(e->{return isBkFkRelationTuple(e);});
-                rightProperSubCol = rightProperSubset.stream().filter(e->{return isBkFkRelationTuple(e);}).collect(Collectors.toList());
-                if(properSubCol!=null && rightProperSubCol!=null) {
-                    Iterator iterOuter = properSubCol.iterator();
-                    Iterator iterInner = rightProperSubCol.iterator();
-                    while (iterOuter.hasNext()) {
-                        Sextet tmp = (Sextet) iterOuter.next();
-                        while (iterInner.hasNext()) {
-                            Sextet innerTmp = (Sextet) iterInner.next();
-                            if (tmp.getValue0().equals(innerTmp.getValue3())
-                                    && tmp.getValue1().equals(innerTmp.getValue4())) {
-                                properSub = tmp;
-                            }
-                        }
-                    }
-                }
+               Collection rightProperSubCol = getProperSubset(rightName).stream().filter(e->{return isBkFkRelationTuple(e);}).collect(Collectors.toList());
+               // if(properSubCol!=null && rightProperSubCol!=null) {
+                   properSub=getBkFkTuple(properSubCol,rightProperSubCol);
+
+                //}
 
 
 
-            } catch (NoSuchElementException e) {
-                properSub = leftProperSubset.stream().max(comp).get();
+           // } catch (NoSuchElementException e) {
+              //  properSub = leftProperSubset.stream().max(comp).get();
                 //TODO handle NoSucheElementException for Claim Payment1&Claim
                 // System.err.println("StackTrace"+leftname+" "+rightName);
                 //System.err.println("ProperSub"+properSub.toString());
-                //e.printStackTrace();
+               // e.printStackTrace();
                 //17/05
                 //return properSub;
 
-            }
+            //}
         }
-        //System.out.println("GET MAXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-        //System.out.println(leftProperSubset.stream().max(comp).get().toString());
         return properSub;
     }
    /** public static Sextet getMaxCardinalityTuple (String leftname, String rightName){
@@ -251,7 +281,7 @@ public class MetadataService {
                 System.out.println("temp equeals tempBk"+temp.equals(tempBkFk));
                 //looks like it works
                 //TODO: test it on AVRO 5
-               /** if(tempBkFk!=null) {
+               /**if(tempBkFk!=null) {
                     temp = tempBkFk;
                 }**/
                 //mark tuple as used
@@ -260,8 +290,9 @@ public class MetadataService {
                 //TODO: Add logic that verfies if isBKFkRelations and test on GHI.
                 //TODO: this does not work in current state it works on GHI but not on lname.equals("STATPEJ.POC_CLAIMPAYMENT51AndSTATPEJ.POC_CLAIM51")  and STATPEJ.POC_POLICY
              if(
-                     isBkFkRelation(lname,rname)
-                     || isBkFkRelationTuple(temp)
+                   //  isBkFkRelation(lname,rname)
+                     //        || isBkFkRelationTuple(temp)
+                     true
                      ){
 
                 if (!SEPTET.containsValue(temp)
@@ -322,7 +353,7 @@ public class MetadataService {
                         JOINTRIPLET.put(rname, transformedR);
                         String newNameR = rname + "1";
                         System.out.println("###########################");
-                        System.out.println("Create new rname " + newNameR);
+                        System.out.println("Create new rname ln 328 MetadataService " + newNameR);
                         IDENTIFIEDBY.put(newNameR, temp2.getValue1());
                         TEMPREGROUPED.add(newNameR);
                         //TODO new stuff
@@ -358,6 +389,148 @@ public class MetadataService {
         }
         return checked;
     }
+    public static boolean checkMatchProperSubsetWithDictionary (String lname , String rname )
+    {
+        Boolean checked = false;
+
+        if (isMatchProperSubset2(lname,rname)){
+
+
+            if(!hasBeenJoined2(lname,rname)
+                    &&!hasAncestors(lname)
+                // && isBkFkRelation(lname,rname)
+                    ) {
+                //  System.out.println("************************************");
+                //System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
+                //System.out.println("GROUP by is proper subset on the lefft" + lname + " on the right" + rname);
+
+                Sextet<String, Set<String>, Long, String, Set<String>, Long> temp = MetadataService.getMatchMaxCardinalityTuple2(lname, rname);
+                Sextet<String, Set<String>, Long, String, Set<String>, Long> tempBkFk = MetadataService.getMatchBkFkTuple(lname,rname);
+                boolean debug1 = SEPTET.containsValue(temp);
+                boolean debug2 = hasDescendants(rname);
+                boolean debug3 = isPartOfRegroup(lname);
+                boolean debug4 = isPartOfRegroup2(lname);
+                boolean debug5 = hasOtherBkFkRelationsWithDictionary(lname, rname);
+                boolean debug6 = isBkFkRelation(lname, rname);
+                boolean debug7 = isBkFkRelationTuple(temp);
+                System.out.print("%%%%%%%%@@@@@");
+                System.out.println(" Is BKFK "+debug7);
+                System.out.println(temp);
+                System.out.println(tempBkFk);
+                System.out.println("lname"+lname);
+                System.out.println("rname"+rname);
+                System.out.println("temp equeals tempBk"+temp.equals(tempBkFk));
+                //looks like it works
+                //TODO: test it on AVRO 5
+                 if(tempBkFk!=null) {
+                 temp = tempBkFk;
+                 }
+                //mark tuple as used
+                //07/05
+                // if(!SEPTET.containsValue(temp)&&!hasDescendants(rname)&&!isPartOfRegroup(rname)&&!isPartOfRegroup2(lname)) {
+                //TODO: Add logic that verfies if isBKFkRelations and test on GHI.
+                //TODO: this does not work in current state it works on GHI but not on lname.equals("STATPEJ.POC_CLAIMPAYMENT51AndSTATPEJ.POC_CLAIM51")  and STATPEJ.POC_POLICY
+                if(
+                        //isBkFkRelation(lname,rname)
+                          //      || isBkFkRelationTuple(temp)
+                        tempBkFk!=null
+                        ){
+
+                    if (!SEPTET.containsValue(temp)
+                            && !hasDescendants(rname)
+                            && !isPartOfRegroup(rname)
+                            && !isPartOfRegroup2(lname)
+                            && !hasOtherBkFkRelationsWithDictionary(lname, rname)
+                        //  && isBkFkRelation(lname,rname)
+                        // &&isBkFkRelationTuple(temp)
+                            ) {
+                        System.out.println("is TmpBk null? "+tempBkFk);
+                        System.out.println(temp);
+                        //TODO:check order of joins and modify to bk-fk instead of max-cardinality
+                        TMPJOINTUPLES.put(lname,temp);
+                        boolean debug8 = isBkFkRelationTuple(temp);
+                        System.out.println(rname);
+                        // System.out.println("hasDescendants "+hasDescendants(rname));
+                        SEPTET.put(lname, temp);
+                        Triplet<String, String, Boolean> transformed = Triplet.with(lname, rname, true);
+                        JOINTRIPLET.put(lname, transformed);
+                        // System.out.println("Regroup using this tuple");
+                        // System.out.println("lname"+lname);
+                        // System.out.println(temp.toString());
+                        String newName = lname + "1";
+                        JOINTRIPLET.put(newName, transformed);
+                        System.out.println("###########################");
+                        System.out.println("Create new leftname ln 435 MetadataService " + newName);
+
+                        /*************METADATA STUFF***************/
+                        /***Add transform start and end      */
+                        TRANSFORMSTARTEND.put(lname, newName);
+                        TRANSFORMSTARTEND2.put(newName, lname);
+                        //JOINORREGROUPTRIPLET.put(lname,transformed);
+                        JOINORREGROUPTRIPLET.put(newName, transformed);
+
+                        /*******************************************/
+
+                        HLLDB.TEMPREGROUPED.add(newName);
+                        HLLDB.IDENTIFIEDBY.put(newName, temp.getValue1().toString());
+                        //TODO new stuff identifiedBy2
+                        Set<String> tmpSet = new HashSet<>();
+                        tmpSet.add(temp.getValue1().toString());
+                        IDENTIFIEDBY2.put(newName, tmpSet);
+                        //Sextet<String,Set<String>,Long,String,Set<String>,Long> tempSextet2  =
+                        //      Sextet.with(newName,temp.getValue1(),temp.getValue2(),temp.getValue3(),temp.getValue4(),temp.getValue5());
+
+                        checked = true;
+
+                        //System.out.println("New Sextet "+tempSextet2);
+                        // subset.put(newName,tempSextet2);
+                        SUBSET.put(newName, temp);
+                        if (isSupersetEmpty(rname)) {
+                            /**prepering the second part of the relation*/
+                            /**meaning the data sets have common properSubsets and need to be regrouped **/
+                            //Sextet<String, Set<String>, Long, String, Set<String>, Long> temp2 = MetadataService.getMatchMaxCardinalityTuple2(rname, lname);
+                            Sextet<String, Set<String>, Long, String, Set<String>, Long> temp2 = MetadataService.getMatchBkFkTuple(rname, lname);
+                            SEPTET.put(rname, temp2);
+                            Triplet<String, String, Boolean> transformedR = Triplet.with(rname, lname, true);
+                            JOINTRIPLET.put(rname, transformedR);
+                            String newNameR = rname + "1";
+                            System.out.println("###########################");
+                            System.out.println("Create new rname " + newNameR);
+                            IDENTIFIEDBY.put(newNameR, temp2.getValue1());
+                            TEMPREGROUPED.add(newNameR);
+                            //TODO new stuff
+                            Set<String> tmpSet2 = new HashSet<>();
+                            tmpSet2.add(temp2.getValue1().toString());
+                            IDENTIFIEDBY2.put(newNameR, tmpSet2);
+
+                            /*************METADATA STUFF***************/
+                            /***Add transform start and end      */
+                            TRANSFORMSTARTEND.put(rname, newNameR);
+                            TRANSFORMSTARTEND2.put(newNameR, rname);
+                            JOINORREGROUPTRIPLET.put(newNameR, transformedR);
+
+                            SUPERSET.put(newNameR, temp2);
+
+                            //new 07/05
+                            ProcessorService.transferRelations(lname, rname, newNameR);
+                        }
+                        /***METADATA*******/
+                        //JOINORREGROUPTRIPLET.put(newName,transformed);
+                    }
+                }
+                //SUBSET.put(lname,temp);
+
+                //TODONE copy properties to new instance
+                // TODONE and mark grouping touple as used id put it in SEPTET
+
+
+
+            }
+
+            //properSubset.get(lname)
+        }
+        return checked;
+    }
 
     public static boolean isSupersetEmpty (String rname)
     {
@@ -372,7 +545,8 @@ public class MetadataService {
     {
         Boolean contains = false;
         Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> rightList= (Collection) SUPERSET.get(rightName);
-        Sextet<String,Set<String>,Long,String,Set<String>,Long> temp = MetadataService.getMatchMaxCardinalityTuple2(leftName,rightName);
+      //  Sextet<String,Set<String>,Long,String,Set<String>,Long> temp = MetadataService.getMatchMaxCardinalityTuple2(leftName,rightName);
+        Sextet<String,Set<String>,Long,String,Set<String>,Long> temp = MetadataService.getMatchBkFkTuple(leftName,rightName);
         // Collection<Sextet> properSubSets = (Collection) properSubset.get(leftName);
         Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> propSub= (Collection) PROPERSUBSET.get(leftName);
 
@@ -487,7 +661,7 @@ public class MetadataService {
     {
         //Check if there is BK -FK relationshp to others than current data set
         // if yes wait
-       boolean hasBkFkRelations = false;
+        boolean hasBkFkRelations = false;
         Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> col =  (Collection) PROPERSUBSET.get(leftName);
         boolean debug = isBkFkRelation(leftName,rightName);
         //Make sure DatasetNema(value0) and columnName(value1) is BK and is not related to other data sets(value3)
@@ -503,14 +677,64 @@ public class MetadataService {
          * Policy and Address relationship is ignored none of them is BK
          */
         hasBkFkRelations= col.stream().anyMatch((e)->isBusinessKey2(e.getValue0(),e.getValue1()) && !e.getValue3().equals(rightName) );
-       // if (isBusinessKey2(leftName,column))
+        // if (isBusinessKey2(leftName,column))
         //{
 
-          //  hasBkFkRelations = col.stream().anyMatch((e)-> e.getValue4().equals(column) && !e.getValue3().equals(rightName));
-            //.filter((e)->{e.getValue5().equals(column)}).findAny().isPresent();
+        //  hasBkFkRelations = col.stream().anyMatch((e)-> e.getValue4().equals(column) && !e.getValue3().equals(rightName));
+        //.filter((e)->{e.getValue5().equals(column)}).findAny().isPresent();
         //}
 
         return hasBkFkRelations;
+    }
+
+    public static boolean hasOtherBkFkRelationsWithDictionary(String leftName, String rightName )
+    {
+        //Check if there is BK -FK relationshp to others than current data set
+        // if yes wait
+        boolean hasBkFkRelations = false;
+        Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> col =  (Collection) PROPERSUBSET.get(leftName);
+     //   Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> col1 =  (Collection) PROPERSUBSET.get(leftName);
+      /**  col=col.stream().filter(e->!SEPTET.containsValue(e.getValue0()) &&
+                !SEPTET.containsValue(e.getValue1())
+                && ! SEPTET.containsValue(e.getValue3())
+                && ! SEPTET.containsValue(e.getValue4())
+        ).collect(Collectors.toList());**/
+        boolean debug = isBkFkRelation(leftName,rightName);
+
+        //Make sure DatasetNema(value0) and columnName(value1) is BK and is not related to other data sets(value3)
+        // if true it has other relationships and we should wait
+
+        /** GHI file In this case we look into Policy Customer
+         * col looks like this A Policy,[customer],9971,Customer,[customer],9971]
+         * B Policy,[policy],10060,Claim,[policy],5055]
+         * C Policy,[customer],9971,Address,[customer],9971
+         * Since we are considering Policy Customer FK-BK relation we would have to transform
+         * but we also have Policy BK Claim FK relationship so in we case do nothing and move on
+         * beacuse Claims does note equal Customer
+         * Policy and Address relationship is ignored none of them is BK
+         */
+        /** String rname= col.stream().filter(e->isBkFkRelationTuple(e))
+                  .findFirst()
+                  .map(e->e.getValue3());**/
+        Sextet temp = col.stream().filter(e->isBkFkRelationTuple(e)).findFirst().get();
+        String rname = temp.getValue3().toString();
+
+
+        boolean debug7 = col.stream().anyMatch((e)-> isBkFkRelationTuple(e) && ! e.getValue3().equals(rname));
+        hasBkFkRelations= col.stream().anyMatch((e)->isBusinessKey2(e.getValue0(),e.getValue1()) && !e.getValue3().equals(rightName) );
+        if (debug7!=hasBkFkRelations)
+        {
+            System.err.println("Not equal "+leftName+" "+rightName);
+        }
+        // if (isBusinessKey2(leftName,column))
+        //{
+
+        //  hasBkFkRelations = col.stream().anyMatch((e)-> e.getValue4().equals(column) && !e.getValue3().equals(rightName));
+        //.filter((e)->{e.getValue5().equals(column)}).findAny().isPresent();
+        //}
+
+       // return hasBkFkRelations;
+        return debug7;
     }
 
     public static boolean isPartOfRegroup (String name)
@@ -645,27 +869,6 @@ public class MetadataService {
 
     public static void hardCodeBusinessKeysAvro()
     {
-       /** String claimnumber = "claimnumber";
-        Set<String> claimBk = new HashSet<>();
-        claimBk.add(claimnumber.toUpperCase());
-        TEMPBKEYS.put(CLAIM_TOPIC,claimBk);
-        String customer = "customer";
-        Set<String> customerBk = new HashSet<>();
-        customerBk.add(customer.toUpperCase());
-        TEMPBKEYS.put(CUSTOMER_TOPIC,customerBk);
-        String payment = "claimnumber";
-        Set<String> paymentBk = new HashSet<>();
-        paymentBk.add(payment.toUpperCase());
-        TEMPBKEYS.put(PAYMENT_TOPIC,paymentBk);
-        String policy = "policy";
-        Set<String> policyBk = new HashSet<>();
-        policyBk.add(policy.toUpperCase());
-        TEMPBKEYS.put(POLICY_TOPIC,policyBk);
-        String address = "address";
-        Set<String> addressBk = new HashSet<>();
-        addressBk.add(address.toUpperCase());
-        TEMPBKEYS.put(ADDRESS_TOPIC,addressBk);**/
-
        //Avro 5
         String claimnumber = "CLAIMID";
         Set<String> claimBk = new HashSet<>();
@@ -691,6 +894,43 @@ public class MetadataService {
         Set<String> claimHandlerBk = new HashSet<>();
         claimHandlerBk.add(claimhandler);
         TEMPBKEYS.put(CLAIMHANDLER_TOPIC,claimHandlerBk);
+
+
+
+    }
+
+    public static void hardCodeBusinessKeysAvroA2()
+    {
+        //Avro 5
+        String claimnumber = "CLAIMID";
+        Set<String> claimBk = new HashSet<>();
+        claimBk.add(claimnumber);
+        TEMPBKEYS.put(CLAIM_TOPIC,claimBk);
+        String customer = "CUSTOMERID";
+        Set<String> customerBk = new HashSet<>();
+        customerBk.add(customer);
+        TEMPBKEYS.put(CUSTOMER_TOPIC,customerBk);
+        String payment = "PAYMENTID";
+        Set<String> paymentBk = new HashSet<>();
+        paymentBk.add(payment);
+        TEMPBKEYS.put(PAYMENT_TOPIC,paymentBk);
+        String policy = "POLICYID";
+        Set<String> policyBk = new HashSet<>();
+        policyBk.add(policy);
+        TEMPBKEYS.put(POLICY_TOPIC,policyBk);
+        String address = "ADDRESSID";
+        Set<String> addressBk = new HashSet<>();
+        addressBk.add(address);
+        TEMPBKEYS.put(ADDRESS_TOPIC,addressBk);
+        String claimhandler = "CLAIMHANDLERID";
+        Set<String> claimHandlerBk = new HashSet<>();
+        claimHandlerBk.add(claimhandler);
+        TEMPBKEYS.put(CLAIMHANDLER_TOPIC,claimHandlerBk);
+        String address2 = "ADDRESSID";
+        Set<String> address2Bk = new HashSet<>();
+        addressBk.add(address2);
+        String ADDRESS2_TOPIC = "STATPEJ.POC_ADDRESS52";
+        TEMPBKEYS.put(ADDRESS2_TOPIC,addressBk);
 
 
 
