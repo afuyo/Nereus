@@ -583,7 +583,8 @@ public class MetadataService {
          * beacuse Claims does note equal Customer
          * Policy and Address relationship is ignored none of them is BK
          */
-        //TODO: DEPTH might become a problem. rightName will probably not be there for new create datasets
+        //TODO: DEPTH might become a problem. rightName will probably not be there for newly created datasets
+        //String rname = getProperSubset(leftName).stream().filter(e->isBkFkRelationTuple(e)).findFirst().get().getValue3();
         hasBkFkRelations= getProperSubset(leftName).stream().anyMatch((e)->isBusinessKey2(e.getValue0(),e.getValue1()) && !e.getValue3().equals(rightName) );
 
 
