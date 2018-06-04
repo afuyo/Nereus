@@ -4,7 +4,7 @@ public class Constants {
 	public static final String GROUPBY_SCHEMA_STRUCTURE="{\"name\": null,\"type\": \"array\",\"items\": null}";
 	public static final String GROUPBY_SCHEMA_SUFFIX="Group";
 	public static final String JOIN_SCHEMA_SUFFIX="Joined";
-	public static final Integer KAFKA_GROUP_ID=457;
+	public static final Integer KAFKA_GROUP_ID=(int)System.currentTimeMillis();
 
 	/**public static final String CUSTOMER_TOPIC ="STATPEJ.POC_CUSTOMER";
 	static final String POLICY_TOPIC ="STATPEJ.POC_POLICY";

@@ -245,7 +245,7 @@ public class MetadataJSON1036Test512NeoSchemaHLL4AvroAddress2 {
                                 }
                                 //TODO new stuff
 
-                                if(!leftNameDepracated.isEmpty()) {
+                             /**   if(!leftNameDepracated.isEmpty()) {
                                      if(IDENTIFIEDBY2.get(leftNameDepracated)!=null){
                                         // Set<String> set1= new HashSet<>((ArrayList<String>)HLLDB.identifiedBy.get(leftNameDepracated));
                                          Set<String> set1= (Set<String>) IDENTIFIEDBY2.get(leftNameDepracated);
@@ -260,7 +260,7 @@ public class MetadataJSON1036Test512NeoSchemaHLL4AvroAddress2 {
 
                                      } else
                                      { IDENTIFIEDBY2.put(leftNameDepracated, set);}
-                                 }
+                                 }**/
                                 if ( leftCaridinality >= rightCardinality ) {
                                // if(true) {
                                     Sextet<String, Set<String>, Long, String, Set<String>, Long> tempSextet =
@@ -502,6 +502,7 @@ public class MetadataJSON1036Test512NeoSchemaHLL4AvroAddress2 {
         //NeoUtils.writeToNeo(schemas);
         //NeoUtils.writeToNeo2();
         NeoUtils.writeToNeo3(schemas);
+       // NeoUtils.writeToNeo();
 
        /** System.out.println("TempRegrouped "+(tempRegrouped.hashCode()));
         System.out.println("TempRegrouped "+(tempRegrouped.toString()));
@@ -599,7 +600,25 @@ public class MetadataJSON1036Test512NeoSchemaHLL4AvroAddress2 {
 
         });**/
 
-     System.out.println("GETObjectName "+NeoUtils.getObjectName("STATPEJ.POC_CLAIMPAYMENT21AndSTATPEJ.POC_CLAIM21"));
+//     System.out.println("GETObjectName "+NeoUtils.getObjectName("STATPEJ.POC_CLAIMPAYMENT21AndSTATPEJ.POC_CLAIM21"));
+
+     System.out.println("JOINREGROUPED");
+     JOINORREGROUPTRIPLET.forEach((k,v)->{
+         System.out.println("Key "+k);
+         System.out.println("Value "+v);
+     });
+    // NeoUtils.createAvroSchemas(schemas);
+     System.out.println("AVRO_SCEMAS");
+     AVRO_SCHEMAS.forEach((k,v)->{
+         System.out.println("Key "+k);
+         System.out.println("Value "+v);
+     });
+
+     System.out.println("Nodes");
+     NODES.forEach((e)->
+     {
+         System.out.println(e);
+     });
 
     }//main
 }//class

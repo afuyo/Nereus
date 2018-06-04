@@ -6,6 +6,9 @@ import org.javatuples.Pair;
 import org.javatuples.Sextet;
 import org.javatuples.Triplet;
 import static com.nereus.HLLDB.*;
+import static com.nereus.MetadataAccessor.*;
+import static com.nereus.MetadataService.*;
+import static com.nereus.ProcessorService.*;
 
 import java.util.*;
 
@@ -14,7 +17,7 @@ public class Builder {
     public static void joinNodes()
     {
 
-        Iterator<String> left = HLLDB.NODES.iterator();
+        Iterator<String> left = getNodes().iterator();
         ArrayList<String> tempList = new ArrayList<>();
         ArrayList<String> regrouped = new ArrayList<>();
 
@@ -27,7 +30,7 @@ public class Builder {
         }
 
         while (left.hasNext()){
-            Iterator<String> right = HLLDB.NODES.iterator();
+            Iterator<String> right = getNodes().iterator();
             String lname = left.next();
 
 
@@ -51,39 +54,31 @@ public class Builder {
 
 
                     /** JOIN on supersets **/
-                    Collection<Sextet> supersets = (Collection) SUPERSET.get(lname);
+                    Collection<Sextet<String,Set<String>,Long,String,Set<String>,Long>> supersets = getSuperset(lname);
                     if(supersets!= null)
                     {
-
-                        //maybe superset-subset relationship
                         if(ProcessorService.supersetContainsTable(lname,rname))
 
                         {
-
                             if(!hasJoined){
-
-                                if(MetadataService.isSubset2(lname,rname)) {
+                                if(isSubset2(lname,rname)) {
                                     //TODO Perhaps make it posible to join on supersets
                                     //TODO In current POC it was never really an issue
-
                                 }
                             }
                         }
-
                     }
                     /**JOIN on subsets **/
 
-                    // Collection<Sextet> col = (Collection) subset.get(lname);
-                    Collection<Sextet> col = ProcessorService.getJoiningTuple2(lname,rname);
-                    //there is subset for that node
+                    Collection<Sextet> col = getJoiningTuple2(lname,rname);
                     if (col != null ) {
                         Iterator<Sextet> iter = col.iterator();
                         while (iter.hasNext()) {
 
-                            Sextet sextet = iter.next();
+                            Sextet tuple = iter.next();
 
-                            /**Subset join sextet **/
-                            //   if(sextet.getValue0().equals(rname))
+                            /**Subset join tuple **/
+                            //   if(tuple.getValue0().equals(rname))
                             if(MetadataService.isSubset2(lname,rname))
                             {
                                 //Triplet<String,String,Boolean> merged= joinTriplet.getOrDefault(rname,defaultTriplet);
@@ -96,74 +91,67 @@ public class Builder {
 
 
                                     //subset.remove(leftNode.name);
-                                    // subset.removeMapping(leftNodeName,sextet);
+                                    // subset.removeMapping(leftNodeName,tuple);
                                     //TODO join procedure
-                                    SEPTET.put(lname, sextet);
+                                    //SEPTET.put(lname, tuple);
+                                    putConsumedTuple(lname,tuple);
 
-                                    //TODONE get coresponding superset and put it in spetet
-
-                                    //removeRelations(lname,rname);
-                                    ProcessorService.removeRelations(sextet.getValue0().toString(),sextet.getValue3().toString());
+                                    removeRelations(tuple.getValue0().toString(),tuple.getValue3().toString());
 
                                     System.out.println("*************JOIN on superset -subset  relation ");
-                                    System.out.println(sextet.toString());
+                                    System.out.println(tuple.toString());
                                     System.out.println("LeftNode " + lname);
-                                    System.out.println("SEX " + sextet.getValue0());
-                                    System.out.println("Sextet get values(3)"+sextet.getValue3());
+                                    System.out.println("SEX " + tuple.getValue0());
+                                    System.out.println("Sextet get values(3)"+tuple.getValue3());
                                     System.out.println("Right " + rname);
                                     System.out.println("JoinTriplet "+JOINTRIPLET.toString());
-                                    Triplet<String, String, Boolean> joined = Triplet.with(lname, rname, false);
-                                    Triplet<String, String, Boolean> joined2 = Triplet.with(rname, lname, false);
-                                    JOINTRIPLET.put(lname,joined);
-                                    JOINTRIPLET.put(rname,joined2);
+                                    Triplet<String, String, Boolean> joinedL = Triplet.with(lname, rname, false);
+                                    Triplet<String, String, Boolean> joinedR = Triplet.with(rname, lname, false);
+                                    putJoinedDataset(lname,joinedL);
+                                    putJoinedDataset(rname,joinedR);
+                                    //JOINTRIPLET.put(lname,joinedL);
+                                    //JOINTRIPLET.put(rname,joinedR);
                                     String newTableName = lname+"And"+rname;
                                     /**added this to get left and right key **/
                                     /**METADATA*********************************/
-                                    //septet.put(newTableName,sextet);
-                                    JOINS.put(newTableName,sextet);
-                                    JOINSSTARTEND.put(lname,newTableName);
-                                    JOINSSTARTEND.put(rname,newTableName);
-                                    Pair<String,String> startEnd = Pair.with(lname,rname);
-                                    JOINSSTARTEND2.put(newTableName,startEnd);
+                                    //septet.put(newTableName,tuple);
+                                    putBuilderNeoMetadata(lname,newTableName,rname,tuple,joinedL);
+                                  //  JOINS.put(newTableName,tuple);
+                                   // JOINSSTARTEND.put(lname,newTableName);
+                                   // JOINSSTARTEND.put(rname,newTableName);
+                                   // Pair<String,String> startEnd = Pair.with(lname,rname);
+                                    //JOINSSTARTEND2.put(newTableName,startEnd);
                                     //JOINORREGROUPTRIPLET.put(lname,joined);
                                     //JOINORREGROUPTRIPLET.put(rname,joined2);
-                                    JOINORREGROUPTRIPLET.put(newTableName,joined);
+                                    //JOINORREGROUPTRIPLET.put(newTableName,joinedL);
 
                                     /******************************************/
                                     /**  if(!tempList.contains(newTableName)){
                                      tempList.add(newTableName);
                                      }**/
 
-                                    if(!HLLDB.TEMPJOINS.contains(newTableName)){
-                                        HLLDB.TEMPJOINS.add(newTableName);
+                                    if(!getTempJoinedNodes().contains(newTableName)){
+                                        putTempJoinedNode(newTableName);
                                     }
                                     //TODO copy properties to the new table
-                                    ProcessorService.transferRelations(lname,rname,newTableName);
+                                    transferRelations(lname,rname,newTableName);
                                     //right table is the superset get identfier
-                                    HLLDB.IDENTIFIEDBY.put(newTableName,sextet.getValue4().toString());
+                                   // HLLDB.IDENTIFIEDBY.put(newTableName,tuple.getValue4().toString());
+                                    putDatasetKey(newTableName,tuple.getValue4().toString());
                                     //TODO: new stuff
-                                    Set<String> tmpSet = new HashSet<>();
-                                    tmpSet.add(sextet.getValue4().toString());
-                                    IDENTIFIEDBY2.put(newTableName,tmpSet);
+                                   // Set<String> tmpSet = new HashSet<>();
+                                   // tmpSet.add(tuple.getValue4().toString());
+                                   // IDENTIFIEDBY2.put(newTableName,tmpSet);
 
                                 }
                             }
-
-                            //  }
-
-
-                            //System.out.println(septet.get(lname)); //subset.
-
                         }
-                        //opy all the stuff and create new node
-
-
                     }
 
 
-                    //if (MetadataService.checkMatchProperSubset(lname,rname))
+                 //  if (MetadataService.checkMatchProperSubset(lname,rname))
                     //testing with Dictionary based on BK-FK realtionship. Before it was based on MaxCardinality
-                    if (MetadataService.checkMatchProperSubsetWithDictionary(lname,rname))
+                   if (MetadataService.checkMatchProperSubsetWithDictionary(lname,rname))
                     {
                         System.out.println("checkingMatchProperSubset "+ lname +" rname "+rname);
                     }
@@ -176,15 +164,11 @@ public class Builder {
 
         }
         System.out.println("Adding nodes ");
-        /**   if(!nodes.containsAll(tempList)){
-         System.out.println("Adding newly joined nodes "+tempList.toString());
-         nodes.addAll(tempList);
-         }**/
 
-        if(!HLLDB.NODES.containsAll(HLLDB.TEMPJOINS)){
+        if(!getNodes().containsAll(getTempJoinedNodes())){
             System.out.println("Adding newly joined nodes "+HLLDB.TEMPJOINS.toString());
-            HLLDB.NODES.addAll(HLLDB.TEMPJOINS);
-            HLLDB.TEMPJOINS.clear();
+            getNodes().addAll(getTempJoinedNodes());
+           getTempJoinedNodes().clear();
         }
 
       /*  if(!nodes.containsAll(regrouped)){
@@ -192,11 +176,11 @@ public class Builder {
             nodes.addAll(regrouped);
         }*/
 
-        if(!HLLDB.NODES.containsAll(HLLDB.TEMPREGROUPED)){
+        if(!getNodes().containsAll(getTempRegroupedNodes())){
 
             System.out.println("Adding regrouped nodes "+HLLDB.TEMPREGROUPED.toString());
-            HLLDB.NODES.addAll(HLLDB.TEMPREGROUPED);
-            HLLDB.TEMPREGROUPED.clear();
+            getNodes().addAll(getTempRegroupedNodes());
+            getTempRegroupedNodes().clear();
         }
 
 
@@ -258,11 +242,12 @@ public class Builder {
 
                 int cardinality = (int) policyHLL.cardinality();
                 String column = set.toString().replace("[","").replace("]","").toString();
-                 HashMap<Set<String>,Integer> tempMap = SETCARDINALITY.get(leftNameDepracated);
+                 HashMap<Set<String>,Integer> columnCardinality = getSetCardinality(leftNameDepracated);
 
-                 if (tempMap!=null) {
-                     tempMap.put(set,cardinality);
-                     SETCARDINALITY.put(leftNameDepracated,tempMap);
+                 if (columnCardinality!=null) {
+                     columnCardinality.put(set,cardinality);
+                     //SETCARDINALITY.put(leftNameDepracated,columnCardinality);
+                     putSetCardinality(leftNameDepracated,columnCardinality);
                  }
                // System.out.println(leftNameDepracated);
                // System.out.println(cardinality+"  "+column);
@@ -300,12 +285,13 @@ public class Builder {
                     //TODO approximately greater procedure
                     //TODO for now let's use 50-100 1-2% error rate
                     Octet<String,Set<String>,Long,String,Set<String>,Long,Long,Long> unionInter = Octet.with(leftNameDepracated,set,leftCaridinality,rightNameDepracated,t,rightCardinality,aU,inter);
-                    UNIONINTER.put(leftNameDepracated,unionInter);
-                  // if (inter > 0) { //ABC AVRO3
+                  //  UNIONINTER.put(leftNameDepracated,unionInter);
+                    putOrderedUnionIntersection(leftNameDepracated,unionInter);
+                 //  if (inter > 0) { //ABC AVRO3
                    // if (inter > 36) { //AVRO4
                    // if (inter >0) { //AVRO3
                   // if(inter>520) { //DEF
-                    if(inter>21) { //AVRO 5
+                   if(inter>21) { //AVRO 5
                         // if (inter>2500){
 
                         //System.out.println("*****************************************");
@@ -346,7 +332,8 @@ public class Builder {
                                     if(!set.isEmpty() && !t.isEmpty() ){
 
 
-                                    PROPERSUBSET.put(leftNameDepracated, tempSextet);
+                                   // PROPERSUBSET.put(leftNameDepracated, tempSextet);
+                                        putProperSubsetTuple(leftNameDepracated,tempSextet);
                                     }
                                 }
                                 /**add values on the other side of the relationship**/
@@ -389,7 +376,8 @@ public class Builder {
                                         Sextet.with(rightNameDepracated, t, rightCardinality, leftNameDepracated, set, leftCaridinality);
                                 if(!leftNameDepracated.isEmpty()) {
                                     if(!set.isEmpty() && !t.isEmpty()){
-                                    SUBSET.put(rightNameDepracated, tempSextet2);
+                                    //SUBSET.put(rightNameDepracated, tempSextet2);
+                                        putSubsetTuple(rightNameDepracated,tempSextet2);
                                     }
                                 }// change from tempSextet2
 
@@ -401,11 +389,12 @@ public class Builder {
                                 //System.out.println("This is primary key");
 
                                 if(!leftNameDepracated.isEmpty()) {
-                                    IDENTIFIEDBY.put(leftNameDepracated, set);
+                                   // IDENTIFIEDBY.put(leftNameDepracated, set);
+                                    putDatasetKey(leftNameDepracated,set.toString());
                                 }
                                 //TODO new stuff
 
-                                if(!leftNameDepracated.isEmpty()) {
+                              /**  if(!leftNameDepracated.isEmpty()) {
                                     if(IDENTIFIEDBY2.get(leftNameDepracated)!=null){
                                         // Set<String> set1= new HashSet<>((ArrayList<String>)HLLDB.identifiedBy.get(leftNameDepracated));
                                         Set<String> set1= (Set<String>) IDENTIFIEDBY2.get(leftNameDepracated);
@@ -420,13 +409,14 @@ public class Builder {
 
                                     } else
                                     { IDENTIFIEDBY2.put(leftNameDepracated, set);}
-                                }
+                                }**/
                                 if ( leftCaridinality >= rightCardinality ) {
                                     // if(true) {
                                     Sextet<String, Set<String>, Long, String, Set<String>, Long> tempSextet =
                                             Sextet.with(leftNameDepracated, set, leftCaridinality, rightNameDepracated, t, rightCardinality);
                                     if(!leftNameDepracated.isEmpty()) {
-                                        SUPERSET.put(leftNameDepracated, tempSextet);
+                                       // SUPERSET.put(leftNameDepracated, tempSextet);
+                                        putSupersetTuple(leftNameDepracated,tempSextet);
                                     }
                                     //identifiers.add(set.toString());
                                     identifier = set.toString();
@@ -446,7 +436,8 @@ public class Builder {
                                     Sextet<String, Set<String>, Long, String, Set<String>, Long> tempSextet =
                                             Sextet.with(leftNameDepracated, set, leftCaridinality, rightNameDepracated, t, rightCardinality);
                                     if(!leftNameDepracated.isEmpty()) {
-                                        SUPERSET.put(leftNameDepracated, tempSextet);
+                                        //SUPERSET.put(leftNameDepracated, tempSextet);
+                                        putSupersetTuple(leftNameDepracated,tempSextet);
                                     }
                                     //subidentifiers.add(set.toString());
                                     //subidentifiers.add(t.toString());

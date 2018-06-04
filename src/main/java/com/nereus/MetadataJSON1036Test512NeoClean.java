@@ -658,7 +658,7 @@ public class MetadataJSON1036Test512NeoClean {
         System.out.println("StreamStart2"+getStreamStart2("Payment1&Claim1"));
         System.out.println("StreamEnd2 "+getStreamEnd("Payment1&Claim1"));**/
 
-        System.out.println("StreamsEnd ");
+       /** System.out.println("StreamsEnd ");
         System.out.println("StreamStart should be Cusomter&Policy");
         System.out.println("StreamStart"+NeoUtils.getStreamStart2("Customer&Policy"));
         System.out.println("StreamEnd should be Customer&Policy1");
@@ -672,7 +672,7 @@ public class MetadataJSON1036Test512NeoClean {
 
 
         System.out.println("StreamStart2"+NeoUtils.getStreamStart2("Customer&Policy1"));
-        System.out.println("StreamEnd2 "+NeoUtils.getStreamEnd("Customer&Policy1"));
+        System.out.println("StreamEnd2 "+NeoUtils.getStreamEnd("Customer&Policy1"));**/
 
 
 

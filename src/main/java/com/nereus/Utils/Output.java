@@ -1,11 +1,13 @@
 package com.nereus.Utils;
 
 import com.nereus.HLLDB;
+import org.javatuples.Pair;
 import org.javatuples.Septet;
 import org.javatuples.Sextet;
 import org.javatuples.Triplet;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import static com.nereus.HLLDB.*;
 
@@ -13,7 +15,7 @@ public class Output {
 
     public static void printMetaData(String nodeName)
     {
-        Collection<String> col0 = (Collection<String>) HLLDB.IDENTIFIEDBY.get(nodeName);
+        Collection<String> col0 = (Collection<String>) IDENTIFIEDBY.get(nodeName);
         if(col0!=null) {
             Iterator iter0 = col0.iterator();
 
@@ -65,7 +67,7 @@ public class Output {
             }
         }
 
-        /**  Collection<Sextet> col4 = (Collection) overlap.get(nodeName);
+        /**  Collection<Sextet> col4 = (Collection) OVERLAP.get(nodeName);
 
          if (col4!=null) {
          Iterator iter4 = col4.iterator();
@@ -107,7 +109,20 @@ public class Output {
         if(col7!=null)
         { System.out.println(col7.stream().findAny().get().toString());}
 
+        /**CARDINALITIES****************/
+        HashMap col8 =  SETCARDINALITY.get(nodeName);
+
+        if (col8!=null) {
+
+
+            System.out.println("Cardinalities for  " + nodeName);
+            System.out.println(col8.toString());
+
+        }
 
     }
+
+
+
 
 }

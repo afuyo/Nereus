@@ -315,10 +315,10 @@ public class MetadataJSON1036Test512NeoSchemaHLL4AvroAddress21 {
      {
          System.out.println(e);
      });
-     System.out.println("UNIONINTER");
+   /**  System.out.println("UNIONINTER");
      UNIONINTER.forEach((k,v)->{
          System.out.println("Key "+k);
          System.out.println("Value "+ v);
-     });
+     });**/
     }//main
 }//class

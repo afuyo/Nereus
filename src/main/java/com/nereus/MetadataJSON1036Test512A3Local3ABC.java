@@ -697,11 +697,11 @@ public class MetadataJSON1036Test512A3Local3ABC {
         //Customer&Policy1
         //isSubset("Payment1&Claim1","Customer&Policy1");
 
-       /** System.out.println("UNIONINTER");
+        System.out.println("UNIONINTER");
         UNIONINTER.forEach((k,v)->{
             System.out.println("Key "+k);
             System.out.println("Value "+ v);
-        });**/
+        });
 
 
 

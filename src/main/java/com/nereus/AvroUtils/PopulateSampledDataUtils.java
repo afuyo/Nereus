@@ -1,16 +1,21 @@
 package com.nereus.AvroUtils;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+import org.json.JSONObject;
+
 import com.google.common.collect.Sets;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
-import net.agkn.hll.HLL;
-import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.*;
-import java.io.FileNotFoundException;
+import net.agkn.hll.HLL;
 
 public class PopulateSampledDataUtils {
 	private static int seed = 123456;
@@ -48,7 +53,7 @@ public class PopulateSampledDataUtils {
 	public static ArrayList<HashMap<String, String>> populateDataFromDataList(ArrayList<String> kafkaDataList) {
 
 		ArrayList<HashMap<String, String>> DDup = new ArrayList<HashMap<String, String>>();
-		
+
 		Set<String> dataFields = new HashSet<String>();
 
 		for (int i = 0; i < kafkaDataList.size(); i++) {
@@ -89,8 +94,7 @@ public class PopulateSampledDataUtils {
 
 		Set<Set<String>> tagSets = createTags(kafkaDataList);
 		ArrayList<HashMap<String, String>> dataMapList = populateDataFromDataList(kafkaDataList);
-
-
+		
 		HashMap<String, HashMap<Set<String>, HLL>> cardinalityMap = new HashMap<>();
 		for (Set<String> sets : tagSets) {
 			HLL hllD = new HLL(14, 5);

@@ -42,6 +42,9 @@ public class TestClass {
         int i=1;
         i++;
         System.out.println("integer i "+i);
+        String customer1 = "customer";
+        System.out.println(customer1.toUpperCase());
+
 
     }
 

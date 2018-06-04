@@ -7,6 +7,15 @@ import com.tryg.common.bean.ConfluentSchemaRegBean;
 import com.tryg.common.logging.LogManager;
 import com.tryg.common.logging.Logger;
 import com.tryg.metadata.confluent.impl.ConfluentSchemaRegistryHandlerImpl;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
 import org.apache.avro.file.DataFileReader;
@@ -14,19 +23,6 @@ import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ConfluentBasedSchemaRegistry implements ISchemaLocator {
 	static Logger LOGGER = LogManager.getLogger(ConfluentBasedSchemaRegistry.class);
@@ -37,23 +33,11 @@ public class ConfluentBasedSchemaRegistry implements ISchemaLocator {
 	ConfluentSchemaRegBean schemaRegistryBean;
 	ConfluentSchemaRegistryHandlerImpl schemaRegImpl;
 
-	public ConfluentBasedSchemaRegistry(String rootFolder, AttunityMessageDecoder messageDecoder) {
+	public ConfluentBasedSchemaRegistry(AttunityMessageDecoder messageDecoder) {
 		this.decoder = messageDecoder;
 		this.schemaRegistryBean = new ConfluentSchemaRegBean();
 		this.schemaRegImpl = new ConfluentSchemaRegistryHandlerImpl();
-		this.schemaRegistryBean
-				.setRepoURL("http://10.84.0.5:8081");
-		Path metadataRoot = Paths.get(rootFolder, new String[]{"metadata"});
-		this.metadataRootFolder = metadataRoot.toString();
-		if (!Files.exists(metadataRoot, new LinkOption[0])) {
-			try {
-				Files.createDirectory(metadataRoot, new FileAttribute[0]);
-			} catch (IOException arg4) {
-				LOGGER.error("IO ERROR :" + arg4.getMessage());
-				arg4.printStackTrace();
-			}
-		}
-
+		this.schemaRegistryBean.setRepoURL("http://10.84.0.5:8081");
 	}
 
 	public String locateSchema(String schemaId) {
@@ -112,7 +96,7 @@ public class ConfluentBasedSchemaRegistry implements ISchemaLocator {
 					encoded = op.getBytes();
 					String e = new String(encoded, StandardCharsets.UTF_8);
 					Schema metadataSchema = (new Parser()).parse(e);
-					Path metadataFilePath = Paths.get(this.metadataRootFolder, new String[]{schemaId + ".dat"});
+					Path metadataFilePath = Paths.get(this.metadataRootFolder, new String[] { schemaId + ".dat" });
 					File file = new File(metadataFilePath.toString());
 					GenericDatumReader datumReader = new GenericDatumReader(metadataSchema);
 					DataFileReader dataFileReader = new DataFileReader(file, datumReader);
@@ -139,7 +123,7 @@ public class ConfluentBasedSchemaRegistry implements ISchemaLocator {
 		this.schemaRegImpl.writeSchema(this.schemaRegistryBean);
 		this.metadataCache.put(metadataMessage.getSchemaId(), metadataMessage);
 		Path metadataFilePath = Paths.get(this.metadataRootFolder,
-				new String[]{metadataMessage.getSchemaId() + ".dat"});
+				new String[] { metadataMessage.getSchemaId() + ".dat" });
 		File file = new File(metadataFilePath.toString());
 		GenericDatumWriter datumWriter = new GenericDatumWriter(metadataMessage.getRawMessage().getSchema());
 		DataFileWriter dataFileWriter = new DataFileWriter(datumWriter);
@@ -209,7 +193,7 @@ public class ConfluentBasedSchemaRegistry implements ISchemaLocator {
 
 		try {
 			schema = schema.replaceAll("\"", "").replaceAll("\\\\", "").replaceAll("\\b\\w+\\b", "\"$0\"");
-//			System.out.println("schema in schemahandler " + schema);
+			// System.out.println("schema in schemahandler " + schema);
 			if (schema.contains("\"schema\":")) {
 				int e = schema.indexOf("{", schema.indexOf("{") + 1);
 				int index2 = schema.lastIndexOf("}", schema.lastIndexOf("}"));
@@ -221,7 +205,7 @@ public class ConfluentBasedSchemaRegistry implements ISchemaLocator {
 			LOGGER.error(arg3);
 		}
 
-//		System.out.println("final insert scheam is " + formattedSchema);
+		// System.out.println("final insert scheam is " + formattedSchema);
 		return formattedSchema;
 	}
 }

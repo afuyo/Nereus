@@ -21,7 +21,8 @@ public class NeoUtils {
 
 
 
-    public static void writeToNeo (HashMap<String,String> schemas )
+   // public static void writeToNeo (HashMap<String,String> schemas )
+   public static void writeToNeo ( )
     {
         //Driver driver = GraphDatabase.driver(
         //      "bolt+routing://10.84.4.12:7687", AuthTokens.basic("neo4j", ""));
@@ -201,7 +202,6 @@ public class NeoUtils {
 
             params.put("id", e);
             params.put("outputLabel", e);
-            //TODO name rename to outputLable
             params.put("joinStart", getJoinStart2(e));
             params.put("joinEnd",getJoinEnd2(e));
             params.put("streamStart",getStreamStart2(e));
@@ -218,45 +218,6 @@ public class NeoUtils {
                     "leftSource:$leftSource,rightSource:$rightSource,finalOutput:$finalOutput}) RETURN a ", params);
 
         }
-
-       /** nodes.forEach((e)->{
-            Map<String, Object> params = new HashMap<>();
-            params.put("id", e);
-            params.put("objectName", e);
-            //TODO name rename to outputLabel
-            params.put("joinStart", getJoinStart2(e));
-            params.put("joinEnd",getJoinEnd2(e));
-            params.put("streamStart",getStreamStart2(e));
-            params.put("streamEnd",getStreamEnd(e));
-            params.put("keyName",getKey(e));
-            params.put("leftSource",getLeftKey(e));
-            params.put("rightSource",getRightKey(e));**/
-
-            /**System.out.println("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&");
-             System.out.println(e);
-             System.out.println("id "+e);
-             System.out.println("name "+e);
-             System.out.println("joinStart "+getJoinStart(e));
-             System.out.println("joinEnd "+getJoinEnd(e));
-             System.out.println("streamStart "+getStreamStart(e));
-             System.out.println("streamEnd "+getStreamEnd(e));
-             System.out.println("keyName "+getKey(e));
-             System.out.println("leftKey "+getLeftKey(e));
-             System.out.println("rightKey "+getRightKey(e));
-             //System.out.println("left key "+getLeftKey(e));**/
-            //Result result = graphDb.execute("CREATE (baeldung:Company {name:$name}) " +
-            //      "-[:owns]-> (tesla:Car {make: $make, model: $model})" +
-            //    "RETURN baeldung, tesla", params);
-
-            //CREATE (:Table {id:row.id, Name: row.Name,joinStart: row.joinStart,
-            //      joinEnd: row.joinEnd,streamStart: row.streamStart, streamEnd: row.streamEnd, keyName: row.keyName, leftKey: row.leftKey, rightKey: row.rightKey});
-
-          //  session.run("CREATE (a:Table {id:$id, name:$name,joinStart:$joinStart,joinEnd:$joinEnd,streamStart:$streamStart,streamEnd:$streamEnd,keyName:$keyName,"+
-            //        "leftKey:$leftKey,rightKey:$rightKey}) RETURN a ", params);
-
-
-       // });
-
         //   session.run("MATCH(m) match(st:Table{streamStart: m.streamStart}) match(est {streamStart: m.streamEnd}) MERGE (st)-[:GROUPBY]->(est)");
         //  session.run("match(m) match(s:Table {joinStart: m.joinStart}) match(e {joinStart: m.joinEnd}) merge (s)-[:JOIN]->(e)");
         session.run("MATCH (p1:Table)" + "MATCH (p2:Table) where p1.outputLabel= p2.joinStart OR p1.outputLabel= p2.joinEnd merge (p1)-[:Join]->(p2)return p1,p2");
@@ -290,13 +251,13 @@ public class NeoUtils {
 
     public static void writeToNeo3 (HashMap<String,String> schemas )
     {
-        NeoUtils.createAvroSchemas(schemas);
+        createAvroSchemas(schemas);
         //Driver driver = GraphDatabase.driver(
         //      "bolt+routing://10.84.4.12:7687", AuthTokens.basic("neo4j", ""));
-        // Driver driver = GraphDatabase.driver("bolt://10.84.4.10:7687",
-          //     AuthTokens.basic("neo4j", "blockchain"));
+       // Driver driver = GraphDatabase.driver("bolt://10.84.4.10:7687",
+         //     AuthTokens.basic("neo4j", "blockchain"));
         Driver driver = GraphDatabase.driver(
-                "bolt://localhost:7687", AuthTokens.basic("neo4j", "wat#rMel0n"));
+               "bolt://localhost:7687", AuthTokens.basic("neo4j", "wat#rMel0n"));
         Session session = driver.session();
         session.run("MATCH(n) detach delete n");
         Map<String, Object> params = new HashMap<>();
@@ -357,6 +318,11 @@ public class NeoUtils {
         session.run("MATCH(n{objectName:'STATPEJ.POC_CUSTOMER2'}) set n.keyName='[[CUSTOMERTIME]]'");
         session.run("MATCH(n{objectName:'STATPEJ.POC_POLICY2'}) set n.keyName='[[POLICYSTARTTIME]]'");
         session.run("MATCH(n{objectName:'STATPEJ.POC_CLAIM2'}) set n.keyName='[[CLAIMCOUNTER, CLAIMNUMBER]]'");
+        //local
+        session.run("MATCH(n{objectName:'Address'}) set n.keyName='[[addresstime]]'");
+        session.run("MATCH(n{objectName:'Customer'}) set n.keyName='[[customertime]]'");
+        session.run("MATCH(n{objectName:'Policy'}) set n.keyName='[[policystarttime]]'");
+        session.run("MATCH(n{objectName:'Claim'}) set n.keyName='[[claimcounter, claimnumber]]'");
         //TODO
         session.close();
         driver.close();
@@ -405,8 +371,8 @@ public class NeoUtils {
     public static String getObjectName(String nodeName){
 
             String line = AVRO_SCHEMAS.get(nodeName);
-            JSONObject js̈́onObject = new JSONObject(line);
-           String objectName = js̈́onObject.getString("name");
+            JSONObject jsonObject = new JSONObject(line);
+           String objectName = jsonObject.getString("name");
 
         return objectName;
     }
