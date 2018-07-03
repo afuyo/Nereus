@@ -190,7 +190,7 @@ public class HLLDB {
 **/
 /**AVRO 5**/
 
- public static final String CUSTOMER_TOPIC ="STATPEJ.POC_CUSTOMER5";
+ /*public static final String CUSTOMER_TOPIC ="STATPEJ.POC_CUSTOMER5";
  public static final String POLICY_TOPIC ="STATPEJ.POC_POLICY5";
  public static final String CLAIM_TOPIC  = "STATPEJ.POC_CLAIM5";
  public static final String PAYMENT_TOPIC = "STATPEJ.POC_CLAIMPAYMENT5";
@@ -225,8 +225,7 @@ public class HLLDB {
  streamTableMapping.put("AddressSt","STATPEJ.POC_ADDRESS5");
  streamTableMapping.put("ClaimHandlerSt","STATPEJ.POC_CLAIMHANDLER5");
  }
-
-
+*/
 
 /**AVRO 5 WITH A2 **/
 /**
@@ -272,7 +271,7 @@ public class HLLDB {
 **/
     /*****LOCAL FILES ADDRESS*/
     //local
-/**
+
    public static ArrayList<String> SOURCE_NODES= new ArrayList<>(Arrays.asList("Claim","Customer","Payment","Policy","Address"));
     public static ArrayList<String> NODES = new ArrayList<>(Arrays.asList("Claim","Customer","Payment","Policy","Address"));
     // public static ArrayList<String> STREAMNODES = new ArrayList<>(Arrays.asList("Claim","Customer","Payment","Policy","Address"));
@@ -304,11 +303,47 @@ static {
         streamTableMapping.put("AddressSt","Address");
         }
 
-**/
+
 
     /**********************************************************************/
 
-/** public static ArrayList<String> NODES = new ArrayList<>(Arrays.asList("Claim","Customer","Payment","Policy"));
+    /**DB2 TEST **/
+/**
+ public static final String CUSTOMER_TOPIC ="DB2N.TNKU016";
+ public static final String POLICY_TOPIC ="DB2N.TNKU017";
+// public static final String CLAIM_TOPIC  = "STATPEJ.POC_CLAIM5";
+// public static final String PAYMENT_TOPIC = "STATPEJ.POC_CLAIMPAYMENT5";
+// public static final String ADDRESS_TOPIC = "STATPEJ.POC_ADDRESS5";
+// public static final String ADDRESS2_TOPIC = "STATPEJ.POC_ADDRESS52";
+// public static final String CLAIMHANDLER_TOPIC = "STATPEJ.POC_CLAIMHANDLER5";
+ public static ArrayList<String> SOURCE_NODES= new ArrayList<>(Arrays.asList("DB2N.TNKU016","DB2N.TNKU017"));
+ //,"STATPEJ.POC_CLAIMPAYMENT5","STATPEJ.POC_POLICY5","STATPEJ.POC_ADDRESS5","STATPEJ.POC_CLAIMHANDLER5","STATPEJ.POC_ADDRESS52"));
+ public static ArrayList<String> NODES= new ArrayList<>(Arrays.asList("DB2N.TNKU016","DB2N.TNKU016","STATPEJ.POC_CLAIMPAYMENT5"));
+
+ public static ArrayList<String> STREAMNODES = new ArrayList<>(Arrays.asList("TNKU016St","TNKU017St"));
+ static {
+
+
+ // streamTableMapping.put("STATPEJ.POC_CLAIM","ClaimSt");
+ // streamTableMapping.put("STATPEJ.POC_CUSTOMER","CustomerSt");
+ // streamTableMapping.put("STATPEJ.POC_CLAIMPAYMENT","PaymentSt");
+ // streamTableMapping.put("STATPEJ.POC_POLICY","PolicySt");
+
+
+ streamTableMapping.put("DB2N.TNKU016","TNKU016St");
+ streamTableMapping.put("DB2N.TNKU017","TNKU017St");
+
+ }
+ public static HashMap<String,String> streamTopicMapping = new HashMap();
+ static {
+
+ streamTableMapping.put("TNKU016St","DB2N.TNKU016");
+ streamTableMapping.put("TNKU017St","\"DB2N.TNKU017");
+
+ }
+
+**/
+ /** public static ArrayList<String> NODES = new ArrayList<>(Arrays.asList("Claim","Customer","Payment","Policy"));
   public  static ArrayList<String> STREAMNODES = new ArrayList<>(Arrays.asList("ClaimSt","CustomerSt","PaymentSt","PolicySt"));
  public static ArrayList<String> SOURCE_NODES= new ArrayList<>(Arrays.asList("Claim","Customer","Payment","Policy","Address"));
   public static final String CUSTOMER_TOPIC = "Customer";

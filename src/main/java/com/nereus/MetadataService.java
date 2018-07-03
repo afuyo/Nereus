@@ -658,7 +658,7 @@ public class MetadataService {
 
     }
 
-    public static void hardCodeBusinessKeysAvro()
+   public static void hardCodeBusinessKeysAvro()
     {
        //Avro 5
         String claimnumber = "CLAIMID";
@@ -689,6 +689,7 @@ public class MetadataService {
 
 
     }
+
 
     public static void hardCodeBusinessKeysAvroA2()
     {

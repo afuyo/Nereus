@@ -23,7 +23,7 @@ public class SetInfo {
 
             case CLAIM_TOPIC: return claimLines;
 
-            case PAYMENT_TOPIC: return paymentLines;
+           case PAYMENT_TOPIC: return paymentLines;
 
             default: return 0;
 

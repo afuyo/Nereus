@@ -37,7 +37,7 @@ public class ConfluentBasedSchemaRegistry implements ISchemaLocator {
 		this.decoder = messageDecoder;
 		this.schemaRegistryBean = new ConfluentSchemaRegBean();
 		this.schemaRegImpl = new ConfluentSchemaRegistryHandlerImpl();
-		this.schemaRegistryBean.setRepoURL("http://10.84.0.5:8081");
+		this.schemaRegistryBean.setRepoURL("http://10.84.0.4:8081");
 	}
 
 	public String locateSchema(String schemaId) {
